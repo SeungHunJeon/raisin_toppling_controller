@@ -1,0 +1,17 @@
+network_path:
+  value: rsc/jsh
+  dtype: string
+
+model_number:
+  value: 100000
+  dtype: string
+
+box_geometry:
+  value: [0.6, 0.6, 0.8]
+  dtype: vector
+
+plugin:
+  raisin_imu_only_plugin: # plugin package name
+    rate:
+      value: 500 # loop frequency
+      dtype: double
