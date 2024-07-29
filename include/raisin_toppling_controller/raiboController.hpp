@@ -17,9 +17,10 @@ namespace raisim {
 
 class RaiboController {
  public:
-  inline bool create(raisim::ArticulatedSystem * robot) {
+  inline bool create(raisim::ArticulatedSystem * robot, raisim::ArticulatedSystem * robot_vicon) {
     RSINFO("Raibo Controller Create!!")
     raibo_ = robot;
+    raibo_vicon_ = robot_vicon;
     gc_.resize(raibo_->getGeneralizedCoordinateDim());
     gv_.resize(raibo_->getDOF());
     gc_init_.resize(raibo_->getGeneralizedCoordinateDim());
@@ -60,14 +61,14 @@ class RaiboController {
     RSINFO("raibo Controller Reset start")
     clippedGenForce_.tail(nJoints_).setZero();
     raibo_->setGeneralizedForce(Eigen::VectorXd::Zero(gvDim_));
-    raibo_->getState(gc_, gv_);
+    raibo_vicon_->getState(gc_, gv_);
     jointTarget_ = gc_.tail(nJoints_);
     previousAction_ << gc_.tail(nJoints_);
     RSINFO("raibo Controller Reset Done")
   }
 
   void updateStateVariables() {
-    raibo_->getState(gc_, gv_);
+    raibo_vicon_->getState(gc_, gv_);
 
     raisim::Vec<4> quat;
     quat[0] = gc_[3];
@@ -75,6 +76,8 @@ class RaiboController {
     quat[2] = gc_[5];
     quat[3] = gc_[6];
     raisim::quatToRotMat(quat, baseRot_);
+
+    raibo_->getState(gc_, gv_);
     bodyAngVel_ = baseRot_.e().transpose() * gv_.segment(3, 3);
 
     /// Object
@@ -83,8 +86,8 @@ class RaiboController {
 
     raisim::Vec<3> offset{0, 0, object_geometry_(2) / 2};
     desired_FOOT_Pos.e() = objectPos_.e() + objectRot_.e() * offset.e();
-    raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
-    raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
+    raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
+    raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
   }
 
   bool advance(const Eigen::Ref<EigenVec> &action) {
@@ -140,8 +143,8 @@ class RaiboController {
     /// previous action
     obDouble_.segment(30, nJoints_) = previousAction_;
     /// object position
-    obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_->getBasePosition().e());
-    obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_->getBasePosition().e());
+    obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_vicon_->getBasePosition().e());
+    obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_vicon_->getBasePosition().e());
     obDouble_.segment(48, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - objectPos_.e());
     /// object orientation
     obDouble_.segment(51, 3) = (baseRot_.e().transpose() * objectRot_.e()).row(0).transpose();
@@ -241,6 +244,7 @@ class RaiboController {
 
   // robot configuration variables
   raisim::ArticulatedSystem *raibo_;
+  raisim::ArticulatedSystem *raibo_vicon_;
   Eigen::VectorXd nominalJointConfig_;
   static constexpr int nJoints_ = 12;
   static constexpr int actionDim_ = 12;

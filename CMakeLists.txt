@@ -20,13 +20,14 @@ find_package(raisin_controller REQUIRED)
 find_package(raisin_interfaces REQUIRED)
 find_package(raisin_data_logger REQUIRED)
 find_package(raisin_raibo REQUIRED)
+find_package(raisim REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
         src/${PROJECT_NAME}/raisin_toppling_controller.cpp
         )
 
 
-target_link_libraries(${PROJECT_NAME} raisin_controller::raisin_controller)
+target_link_libraries(${PROJECT_NAME} raisin_controller::raisin_controller raisim::raisim)
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

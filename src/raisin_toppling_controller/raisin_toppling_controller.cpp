@@ -32,7 +32,9 @@ bool raiboLearningController::create() {
   
   control_dt_ = 0.01;
   communication_dt_ = 0.00025;
-  raiboController_.create(robotHub_);
+  robot_ = reinterpret_cast<raisim::ArticulatedSystem*>(worldHub_.getObject("robot"));
+  auto robot_vicon_ = reinterpret_cast<raisim::ArticulatedSystem*>(worldHub_.getObject("robot_vicon"));
+  raiboController_.create(robot_, robot_vicon_);
   
 
   /// load object geometry
@@ -94,7 +96,7 @@ bool raiboLearningController::create() {
   );
 
   RSINFO("Set Command !")
-  auto obj = reinterpret_cast<raisim::SingleBodyObject*>(worldSim_.getObject("Object"));
+  auto obj = reinterpret_cast<raisim::SingleBodyObject*>(worldSim_.getObject("object_vicon"));
   raiboController_.setCommand(obj, obj_geometry_, 0);
 
   RSINFO("Create Done")
@@ -110,10 +112,10 @@ bool raiboLearningController::advance() {
   controlEnd_ = std::chrono::high_resolution_clock::now();
   elapsedTime_ = std::chrono::duration_cast<std::chrono::microseconds>(controlEnd_ - controlBegin_).count() / 1.e6;
 
-  if (fabs(fmod(elapsedTime_, 0.0025)) < 1e-6) {
-    // RSINFO("clip torque")
-    raiboController_.clipTorque();
-  }
+  // if (fabs(fmod(elapsedTime_, 0.0025)) < 1e-6) {
+  //   // RSINFO("clip torque")
+  //   raiboController_.clipTorque();
+  // }
 
   if (elapsedTime_ < control_dt_) {
     return true;
@@ -123,8 +125,8 @@ bool raiboLearningController::advance() {
   /// 100Hz controller
   
   controlBegin_ = std::chrono::high_resolution_clock::now();
-  // robotHub_->setControlMode(raisim::ControlMode::PD_PLUS_FEEDFORWARD_TORQUE);
-  robotHub_->setPdGains(raiboController_.getJointPGain(), raiboController_.getJointDGain());
+  // robot_->setControlMode(raisim::ControlMode::PD_PLUS_FEEDFORWARD_TORQUE);
+  robot_->setPdGains(raiboController_.getJointPGain(), raiboController_.getJointDGain());
   raiboController_.updateObservation();
   raiboController_.advance(obsScalingAndGetAction().head(12));
   dataLogger_.append(logIdx_,

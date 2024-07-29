@@ -7,11 +7,16 @@ model_number:
   dtype: string
 
 box_geometry:
-  value: [0.6, 0.6, 0.8]
+  value: [0.3, 0.6, 0.45]
   dtype: vector
 
 plugin:
-  raisin_imu_only_plugin: # plugin package name
+  raisin_iekf_plugin: # plugin package name
+    rate:
+      value: 500 # loop frequency
+      dtype: double
+      
+  raisin_vicon_plugin: # plugin package name
     rate:
       value: 500 # loop frequency
       dtype: double
