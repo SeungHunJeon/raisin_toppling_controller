@@ -1,9 +1,9 @@
 network_path:
-  value: rsc/jsh
+  value: rsc/jsh/ver2
   dtype: string
 
 model_number:
-  value: 100000
+  value: 39000
   dtype: string
 
 box_geometry:
@@ -16,7 +16,7 @@ plugin:
       value: 500 # loop frequency
       dtype: double
       
-  raisin_vicon_plugin: # plugin package name
-    rate:
-      value: 500 # loop frequency
-      dtype: double
+  # raisin_vicon_plugin: # plugin package name
+  #   rate:
+  #     value: 500 # loop frequency
+  #     dtype: double

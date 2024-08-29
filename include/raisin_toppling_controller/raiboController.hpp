@@ -50,8 +50,8 @@ class RaiboController {
     obDouble_.setZero(obDim_);
 
     /// pd controller
-    jointPgain_.setZero(gvDim_); jointPgain_.tail(nJoints_).setConstant(50.0);
-    jointDgain_.setZero(gvDim_); jointDgain_.tail(nJoints_).setConstant(0.5);
+    jointPgain_.setZero(gvDim_); jointPgain_.tail(nJoints_).setConstant(100.0);
+    jointDgain_.setZero(gvDim_); jointDgain_.tail(nJoints_).setConstant(3.0);
     raibo_->setPdGains(jointPgain_, jointDgain_);
     pTarget_.setZero(gcDim_); vTarget_.setZero(gvDim_);
     return true;
@@ -68,7 +68,8 @@ class RaiboController {
   }
 
   void updateStateVariables() {
-    raibo_vicon_->getState(gc_, gv_);
+    raibo_->getState(gc_, gv_);
+    // raibo_vicon_->getState(gc_, gv_);
 
     raisim::Vec<4> quat;
     quat[0] = gc_[3];
@@ -86,8 +87,10 @@ class RaiboController {
 
     raisim::Vec<3> offset{0, 0, object_geometry_(2) / 2};
     desired_FOOT_Pos.e() = objectPos_.e() + objectRot_.e() * offset.e();
-    raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
-    raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
+    raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
+    raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
+    // raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
+    // raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
   }
 
   bool advance(const Eigen::Ref<EigenVec> &action) {
@@ -143,8 +146,10 @@ class RaiboController {
     /// previous action
     obDouble_.segment(30, nJoints_) = previousAction_;
     /// object position
-    obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_vicon_->getBasePosition().e());
-    obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_vicon_->getBasePosition().e());
+      obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_->getBasePosition().e());
+    obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_->getBasePosition().e());
+    // obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_vicon_->getBasePosition().e());
+    // obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_vicon_->getBasePosition().e());
     obDouble_.segment(48, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - objectPos_.e());
     /// object orientation
     obDouble_.segment(51, 3) = (baseRot_.e().transpose() * objectRot_.e()).row(0).transpose();
@@ -285,7 +290,7 @@ class RaiboController {
   /// joint vel limit: 48V 1560rpm (clip start at 743.5rpm) -> 65V 32.77 rad/s (clip start at 20.1 rad/s)
   Eigen::VectorXd clippedGenForce_, frictionTorque_;
   Eigen::VectorXd jointPos_, jointVel_;
-  double clippedTorque_, jointVelLimit_ = 35.0091, clipStart_ = 25.0, torqueLimit_ = 90.8558;
+  double clippedTorque_, jointVelLimit_ = 35.0091, clipStart_ = 25.0, torqueLimit_ = 71.5;
 };
 
 }

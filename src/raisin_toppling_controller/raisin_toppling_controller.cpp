@@ -125,7 +125,7 @@ bool raiboLearningController::advance() {
   /// 100Hz controller
   
   controlBegin_ = std::chrono::high_resolution_clock::now();
-  // robot_->setControlMode(raisim::ControlMode::PD_PLUS_FEEDFORWARD_TORQUE);
+  robot_->setControlMode(raisim::ControlMode::PD_PLUS_FEEDFORWARD_TORQUE);
   robot_->setPdGains(raiboController_.getJointPGain(), raiboController_.getJointDGain());
   raiboController_.updateObservation();
   raiboController_.advance(obsScalingAndGetAction().head(12));

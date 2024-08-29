@@ -2,7 +2,7 @@ import sys
 import torch
 from ruamel.yaml import YAML, dump, RoundTripDumper
 
-iteration = 47600
+iteration = 39000
 full = torch.load('full_'+str(iteration)+'.pt', map_location='cpu')  # full_*.pt file
 
 
