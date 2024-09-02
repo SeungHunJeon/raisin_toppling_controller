@@ -16,7 +16,7 @@ plugin:
       value: 500 # loop frequency
       dtype: double
       
-  # raisin_vicon_plugin: # plugin package name
-  #   rate:
-  #     value: 500 # loop frequency
-  #     dtype: double
+  raisin_vicon_plugin: # plugin package name
+    rate:
+      value: 500 # loop frequency
+      dtype: double

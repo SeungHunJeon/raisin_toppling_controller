@@ -42,7 +42,7 @@ class raiboLearningController : public Controller {
   
 
  private:
-  void joyCallback(const sensor_msgs::msg::Joy::SharedPtr msg);
+  void commandCallback(const raisin_interfaces::msg::Command::SharedPtr msg);
 
   Eigen::VectorXd obj_geometry_;
 

@@ -9,9 +9,6 @@
 #include <set>
 #include "raisin_toppling_controller/helper/BasicEigenTypes.hpp"
 #include <raisim/RaisimServer.hpp>
-//
-// Created by donghoon on 8/11/22.
-//
 
 namespace raisim {
 
@@ -26,7 +23,6 @@ class RaiboController {
     gc_init_.resize(raibo_->getGeneralizedCoordinateDim());
     gv_init_.resize(raibo_->getDOF());
 
-//    raibo_->setControlMode(raisim::ControlMode::FORCE_AND_TORQUE);
     /// Observation
     nominalJointConfig_.setZero(nJoints_);
     nominalJointConfig_ << 0, 0.56, -1.12, 0, 0.56, -1.12, 0, 0.56, -1.12, 0, 0.56, -1.12;
@@ -68,8 +64,8 @@ class RaiboController {
   }
 
   void updateStateVariables() {
-    raibo_->getState(gc_, gv_);
-    // raibo_vicon_->getState(gc_, gv_);
+    // raibo_->getState(gc_, gv_);
+    raibo_vicon_->getState(gc_, gv_);
 
     raisim::Vec<4> quat;
     quat[0] = gc_[3];
@@ -78,7 +74,7 @@ class RaiboController {
     quat[3] = gc_[6];
     raisim::quatToRotMat(quat, baseRot_);
 
-    raibo_->getState(gc_, gv_);
+    // raibo_->getState(gc_, gv_);
     bodyAngVel_ = baseRot_.e().transpose() * gv_.segment(3, 3);
 
     /// Object
@@ -87,10 +83,10 @@ class RaiboController {
 
     raisim::Vec<3> offset{0, 0, object_geometry_(2) / 2};
     desired_FOOT_Pos.e() = objectPos_.e() + objectRot_.e() * offset.e();
-    raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
-    raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
-    // raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
-    // raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
+    // raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
+    // raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
+    raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
+    raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
   }
 
   bool advance(const Eigen::Ref<EigenVec> &action) {
@@ -146,10 +142,10 @@ class RaiboController {
     /// previous action
     obDouble_.segment(30, nJoints_) = previousAction_;
     /// object position
-      obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_->getBasePosition().e());
-    obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_->getBasePosition().e());
-    // obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_vicon_->getBasePosition().e());
-    // obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_vicon_->getBasePosition().e());
+    // obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_->getBasePosition().e());
+    // obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_->getBasePosition().e());
+    obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_vicon_->getBasePosition().e());
+    obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_vicon_->getBasePosition().e());
     obDouble_.segment(48, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - objectPos_.e());
     /// object orientation
     obDouble_.segment(51, 3) = (baseRot_.e().transpose() * objectRot_.e()).row(0).transpose();

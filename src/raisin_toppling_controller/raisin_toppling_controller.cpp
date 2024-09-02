@@ -184,13 +184,13 @@ void raiboLearningController::setCommand(raisim::SingleBodyObject* object, Eigen
   raiboController_.setCommand(object, object_geometry, toppling_type);
 }
 
-void raiboLearningController::joyCallback(const sensor_msgs::msg::Joy::SharedPtr msg)
+void raiboLearningController::commandCallback(const raisin_interfaces::msg::Command::SharedPtr msg)
 try {
   joySubscribeBegin_ = std::chrono::high_resolution_clock::now();
   joySubscribeTime_ = std::chrono::duration_cast<std::chrono::microseconds>(
       joySubscribeBegin_ - joySubscribeEnd_).count();
 
-  command_ << msg->axes[0], msg->axes[1], msg->axes[2];
+  // command_ << msg->x_vel, msg->y_vel, msg->yaw_rate;
   // raiboController_.setCommand(command_);
 
   joySubscribeEnd_ = std::chrono::high_resolution_clock::now();
