@@ -184,19 +184,33 @@ void raiboLearningController::setCommand(raisim::SingleBodyObject* object, Eigen
   raiboController_.setCommand(object, object_geometry, toppling_type);
 }
 
-void raiboLearningController::commandCallback(const raisin_interfaces::msg::Command::SharedPtr msg)
-try {
-  joySubscribeBegin_ = std::chrono::high_resolution_clock::now();
-  joySubscribeTime_ = std::chrono::duration_cast<std::chrono::microseconds>(
-      joySubscribeBegin_ - joySubscribeEnd_).count();
+void raiboLearningController::joySigCallback(
+    const std_msgs::msg::Int16::SharedPtr msg) {
 
-  // command_ << msg->x_vel, msg->y_vel, msg->yaw_rate;
-  // raiboController_.setCommand(command_);
-
-  joySubscribeEnd_ = std::chrono::high_resolution_clock::now();
-} catch (const std::exception &e) {
-  std::cout << e.what();
 }
+//{
+//  switch (JoySignal(msg->data)) {
+//    case JoySignal::SIGACTION0:
+//      locomotion_type_ = 1; // Quadrupedal
+//      break;
+//    case JoySignal::SIGACTION1:
+//      locomotion_type_ = 0; // Bipedal
+//      break;
+//    default:
+//      break;
+//  }
+//}
+
+void raiboLearningController::commandCallback(const raisin_interfaces::msg::Command::SharedPtr msg) {
+
+}
+//try {
+////  command_ << msg->x_vel, msg->y_vel, msg->yaw_rate;
+////  command_4_ << command_, locomotion_type_;
+////  raiboController_.setCommand(command_4_);
+//} catch (const std::exception &e) {
+//  std::cout << e.what();
+//}
 
 }
 }

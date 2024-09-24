@@ -57,15 +57,15 @@ class RaiboController {
     RSINFO("raibo Controller Reset start")
     clippedGenForce_.tail(nJoints_).setZero();
     raibo_->setGeneralizedForce(Eigen::VectorXd::Zero(gvDim_));
-    raibo_vicon_->getState(gc_, gv_);
+    raibo_->getState(gc_, gv_);
     jointTarget_ = gc_.tail(nJoints_);
     previousAction_ << gc_.tail(nJoints_);
     RSINFO("raibo Controller Reset Done")
   }
 
   void updateStateVariables() {
-//     raibo_->getState(gc_, gv_);
-    raibo_vicon_->getState(gc_, gv_);
+     raibo_->getState(gc_, gv_);
+//    raibo_vicon_->getState(gc_, gv_);
 
     raisim::Vec<4> quat;
     quat[0] = gc_[3];
@@ -74,7 +74,7 @@ class RaiboController {
     quat[3] = gc_[6];
     raisim::quatToRotMat(quat, baseRot_);
 
-     raibo_->getState(gc_, gv_);
+//     raibo_->getState(gc_, gv_);
     bodyAngVel_ = baseRot_.e().transpose() * gv_.segment(3, 3);
 
     /// Object
@@ -87,6 +87,8 @@ class RaiboController {
 //     raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
     raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
     raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
+
+    raibo_vicon_->getBaseOrientation(viconRobotRot_);
   }
 
   bool advance(const Eigen::Ref<EigenVec> &action) {
@@ -132,7 +134,7 @@ class RaiboController {
   void updateObservation() {
     updateStateVariables();
     /// body orientation
-    obDouble_.head(3) = baseRot_.e().row(2).transpose();
+    obDouble_.head(3) = viconRobotRot_.e().row(2).transpose();
     /// body ang vel
     obDouble_.segment(3, 3) = bodyAngVel_;
     /// joint pos
@@ -144,23 +146,23 @@ class RaiboController {
     /// object position
 //     obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_->getBasePosition().e());
 //     obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_->getBasePosition().e());
-    obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_vicon_->getBasePosition().e());
-    obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_vicon_->getBasePosition().e());
-    obDouble_.segment(48, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - objectPos_.e());
+    obDouble_.segment(42, 3) = viconRobotRot_.e().transpose() * (objectPos_.e() - raibo_vicon_->getBasePosition().e());
+    obDouble_.segment(45, 3) = viconRobotRot_.e().transpose() * (target_objectPos_.e() - raibo_vicon_->getBasePosition().e());
+    obDouble_.segment(48, 3) = viconRobotRot_.e().transpose() * (target_objectPos_.e() - objectPos_.e());
     /// object orientation
-    obDouble_.segment(51, 3) = (baseRot_.e().transpose() * objectRot_.e()).row(0).transpose();
-    obDouble_.segment(54, 3) = (baseRot_.e().transpose() * objectRot_.e()).row(1).transpose();
-    obDouble_.segment(57, 3) = (baseRot_.e().transpose() * objectRot_.e()).row(2).transpose();
-    obDouble_.segment(60, 3) = (baseRot_.e().transpose() * target_objectRot_.e()).row(0).transpose();
-    obDouble_.segment(63, 3) = (baseRot_.e().transpose() * target_objectRot_.e()).row(1).transpose();
-    obDouble_.segment(66, 3) = (baseRot_.e().transpose() * target_objectRot_.e()).row(2).transpose();
-    obDouble_.segment(69, 3) = (baseRot_.e().transpose() * objectRot_.e().transpose() * target_objectRot_.e()).row(0).transpose();
-    obDouble_.segment(72, 3) = (baseRot_.e().transpose() * objectRot_.e().transpose() * target_objectRot_.e()).row(1).transpose();
-    obDouble_.segment(75, 3) = (baseRot_.e().transpose() * objectRot_.e().transpose() * target_objectRot_.e()).row(2).transpose();
+    obDouble_.segment(51, 3) = (viconRobotRot_.e().transpose() * objectRot_.e()).row(0).transpose();
+    obDouble_.segment(54, 3) = (viconRobotRot_.e().transpose() * objectRot_.e()).row(1).transpose();
+    obDouble_.segment(57, 3) = (viconRobotRot_.e().transpose() * objectRot_.e()).row(2).transpose();
+    obDouble_.segment(60, 3) = (viconRobotRot_.e().transpose() * target_objectRot_.e()).row(0).transpose();
+    obDouble_.segment(63, 3) = (viconRobotRot_.e().transpose() * target_objectRot_.e()).row(1).transpose();
+    obDouble_.segment(66, 3) = (viconRobotRot_.e().transpose() * target_objectRot_.e()).row(2).transpose();
+    obDouble_.segment(69, 3) = (viconRobotRot_.e().transpose() * objectRot_.e().transpose() * target_objectRot_.e()).row(0).transpose();
+    obDouble_.segment(72, 3) = (viconRobotRot_.e().transpose() * objectRot_.e().transpose() * target_objectRot_.e()).row(1).transpose();
+    obDouble_.segment(75, 3) = (viconRobotRot_.e().transpose() * objectRot_.e().transpose() * target_objectRot_.e()).row(2).transpose();
 
     /// Foot guiding
-    obDouble_.segment(78, 3) = baseRot_.e().transpose() * (desired_FOOT_Pos.e() - LF_FOOT_Pos.e());
-    obDouble_.segment(81, 3) = baseRot_.e().transpose() * (desired_FOOT_Pos.e() - RF_FOOT_Pos.e());
+    obDouble_.segment(78, 3) = viconRobotRot_.e().transpose() * (desired_FOOT_Pos.e() - LF_FOOT_Pos.e());
+    obDouble_.segment(81, 3) = viconRobotRot_.e().transpose() * (desired_FOOT_Pos.e() - RF_FOOT_Pos.e());
 
     /// object geometry
     obDouble_.segment(84, 3) = object_geometry_;
@@ -258,6 +260,7 @@ class RaiboController {
   Eigen::VectorXd gc_, gv_, gc_init_, gv_init_;
   Eigen::Vector3d bodyAngVel_;
   raisim::Mat<3, 3> baseRot_;
+  raisim::Mat<3, 3> viconRobotRot_;
 
   // robot observation variables
   Eigen::VectorXd obDouble_;
