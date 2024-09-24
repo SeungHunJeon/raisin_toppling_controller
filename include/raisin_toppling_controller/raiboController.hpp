@@ -47,7 +47,7 @@ class RaiboController {
 
     /// pd controller
     jointPgain_.setZero(gvDim_); jointPgain_.tail(nJoints_).setConstant(100.0);
-    jointDgain_.setZero(gvDim_); jointDgain_.tail(nJoints_).setConstant(3.0);
+    jointDgain_.setZero(gvDim_); jointDgain_.tail(nJoints_).setConstant(1.0);
     raibo_->setPdGains(jointPgain_, jointDgain_);
     pTarget_.setZero(gcDim_); vTarget_.setZero(gvDim_);
     return true;
@@ -64,7 +64,7 @@ class RaiboController {
   }
 
   void updateStateVariables() {
-    // raibo_->getState(gc_, gv_);
+//     raibo_->getState(gc_, gv_);
     raibo_vicon_->getState(gc_, gv_);
 
     raisim::Vec<4> quat;
@@ -74,7 +74,7 @@ class RaiboController {
     quat[3] = gc_[6];
     raisim::quatToRotMat(quat, baseRot_);
 
-    // raibo_->getState(gc_, gv_);
+     raibo_->getState(gc_, gv_);
     bodyAngVel_ = baseRot_.e().transpose() * gv_.segment(3, 3);
 
     /// Object
@@ -83,8 +83,8 @@ class RaiboController {
 
     raisim::Vec<3> offset{0, 0, object_geometry_(2) / 2};
     desired_FOOT_Pos.e() = objectPos_.e() + objectRot_.e() * offset.e();
-    // raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
-    // raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
+//     raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
+//     raibo_->getFramePosition(raibo_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
     raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("LF_FOOT"), LF_FOOT_Pos);
     raibo_vicon_->getFramePosition(raibo_vicon_->getFrameIdxByLinkName("RF_FOOT"), RF_FOOT_Pos);
   }
@@ -142,8 +142,8 @@ class RaiboController {
     /// previous action
     obDouble_.segment(30, nJoints_) = previousAction_;
     /// object position
-    // obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_->getBasePosition().e());
-    // obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_->getBasePosition().e());
+//     obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_->getBasePosition().e());
+//     obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_->getBasePosition().e());
     obDouble_.segment(42, 3) = baseRot_.e().transpose() * (objectPos_.e() - raibo_vicon_->getBasePosition().e());
     obDouble_.segment(45, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - raibo_vicon_->getBasePosition().e());
     obDouble_.segment(48, 3) = baseRot_.e().transpose() * (target_objectPos_.e() - objectPos_.e());
