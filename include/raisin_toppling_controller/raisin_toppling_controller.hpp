@@ -48,7 +48,7 @@ class raiboLearningController : public Controller {
   Eigen::VectorXd obj_geometry_;
 
   raisim::RaiboController raiboController_;
-  raisim::ArticulatedSystem* robot_;
+  raisim::ArticulatedSystem* robot_vicon;
   Eigen::VectorXf obs_;
   Eigen::Matrix<float, ENCOUTDIM, 1> latent_;
   int clk_ = 0;
